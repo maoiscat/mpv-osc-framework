@@ -1,6 +1,6 @@
 # mpv-osc-framework
 
-a mpv osc framework to help build your custom osc
+a mpv osc framework to help building your custom osc
 
 changelog:
 
