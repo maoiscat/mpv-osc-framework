@@ -22,7 +22,7 @@ This oscf provides modularized and event-driven methods to help building your os
 
 ## Elements
 
-Elements are basic units of the osc. An element can be a button, a shape, or even an invisible updater. The default element is already defined in the code. The most important part is the tick() function and the responder table.
+Elements are basic units of the osc. An element can be a button, a shape, or even an invisible updater. The default element is already defined in the code. The most important part is the render functions and the responder table.
 
 Function tick() periodically updates the render codes to the framework, which is controlled by the system timer. The render codes are stored in ''pack'' table. pack[1] stores position codes, pack[2] style codes, and pack[3] and after are drawing/text content codes. There are setPos(), setStyle(), and render() functions to update them respectively. The result codes are in ASS format. MPV provides mp.assdraw package to generate drawing codes. 
 
