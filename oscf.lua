@@ -41,7 +41,6 @@ local fadeFactor = 0        -- fade factor as transparency modifier
 -- set osd display
 -- text: in ASS format
 function setOsd(text)
-    if osd.data == text then return end
     osd.data = text
     osd:update()
 end
@@ -117,7 +116,7 @@ local renderLayout = {
         updateVisual()
         if visible then
             for i, e in ipairs(layouts.play) do
-                e.setStyle(e, fadeFactor)       -- remix fade effect
+                e.setAlpha(e, fadeFactor)       -- remix fade effect
                 text[i] = e.tick(e)
             end 
         end
@@ -207,35 +206,28 @@ elements['default'] = {
         },
     visible = true,
     -- pack[1] - position codes
-    -- pack[2] - style codes
-    -- pack[3] - other contents
+    -- pack[2] - alpha codes
+    -- pack[3] - other style codes
+    -- pack[4] - other contents
     -- pack[>4] also works if you like 
-    pack = {'', '', ''},
+    pack = {'', '', '', ''},
     -- initialize the element
-    init = function(self) end,
+    init = function(self)
+            self:setPos()
+            self:setStyle()
+            self:render()
+        end,
     -- set positon codes
     setPos = function(self)
             if not self.geo then return end
-            local fmt = {'{'}
-            if self.geo then
-                table.insert(fmt, string.format('\\pos(%f,%f)\\an%d', self.geo.x, self.geo.y, self.geo.an)) end
-            table.insert(fmt,'}')
-            self.pack[1] = table.concat(fmt)
+            self.pack[1] = string.format('{\\pos(%f,%f)\\an%d}', self.geo.x, self.geo.y, self.geo.an)
         end,
-    -- set style codes
-    -- trans: OPTIONAL transparency modifier, 0~1, 1 for invisible
-    setStyle = function(self, trans)
+    -- set alpha codes, usually called by oscf
+    -- trans: transparency modifier, 0~1, 1 for invisible
+    setAlpha = function(self, trans)
             if not self.style then return end
-            local fmt = {'{'}
-            if self.style.color then
-                table.insert(fmt, 
-                    string.format('\\1c&H%s&\\2c&H%s&\\3c&H%s&\\4c&H%s&',
-                        self.style.color[1], self.style.color[2], self.style.color[3], self.style.color[4]))
-            end
-            if trans == nil then trans = self.trans
-                else self.trans = trans
-            end
-            local alpha = {}
+            self.trans = trans
+            local alpha = {0, 0, 0, 0}
             if self.style.alpha then
                 for i = 1, 4 do
                     alpha[i] = 255 - (((1-(self.style.alpha[i]/255)) * (1-trans)) * 255)
@@ -243,8 +235,19 @@ elements['default'] = {
             else
                 alpha = {trans*255, trans*255, trans*255, trans*255}
             end
-            table.insert(fmt, string.format('\\1a&H%x&\\2a&H%x&\\3a&H%x&\\4a&H%x&',
-                alpha[1], alpha[2], alpha[3], alpha[4]))
+            self.pack[2] = string.format('{\\1a&H%x&\\2a&H%x&\\3a&H%x&\\4a&H%x&}',
+                                            alpha[1], alpha[2], alpha[3], alpha[4])
+        end,
+    -- set style codes, including alpha codes
+    setStyle = function(self)
+            if not self.style then return end
+            self:setAlpha(self.trans)
+            local fmt = {'{'}
+            if self.style.color then
+                table.insert(fmt, 
+                    string.format('\\1c&H%s&\\2c&H%s&\\3c&H%s&\\4c&H%s&',
+                        self.style.color[1], self.style.color[2], self.style.color[3], self.style.color[4]))
+            end
             if self.style.border then
                 table.insert(fmt, string.format('\\bord%.2f', self.style.border)) end
             if self.style.blur then
@@ -258,11 +261,11 @@ elements['default'] = {
             if self.style.wrap then
                 table.insert(fmt, string.format('\\q%d', self.style.wrap)) end
             table.insert(fmt, '}')
-            self.pack[2] = table.concat(fmt)
+            self.pack[3] = table.concat(fmt)
         end,
     -- update other contents
     render = function(self) end,
-    -- called by tick(), return the pack as a string for further render
+    -- called by function tick(), return the pack as a string for further render
     -- it MUST return a string, or the osc will halt
     tick = function(self)
             if self.visible then return table.concat(self.pack)
@@ -459,9 +462,8 @@ mp.set_key_bindings({
         {'mbtn_mid', function() eventButton('mbtn_mid_up') end, function() eventButton('mbtn_mid_down')  end},
         {'wheel_up', function() eventButton('wheel_up') end},
         {'wheel_down', function() eventButton('wheel_down') end},
--- uncomment to enable double click events
---      {'mbtn_left_dbl', function() eventButton('mbtn_left_dbl') end},
---      {'mbtn_right_dbl', function() eventButton('mbtn_right_dbl') end},
+        {'mbtn_left_dbl', function() eventButton('mbtn_left_dbl') end},
+        {'mbtn_right_dbl', function() eventButton('mbtn_right_dbl') end},
     }, '_button_', 'force')
 
 -- mouse button events control for user scripts

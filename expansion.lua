@@ -251,7 +251,7 @@ ne.init = function(self)
         ass:an(2)
         ass:append('{\\fs30\\1c&H0&\\3c&HFFFFFF&\\q2}DROP FILES HERE TO PLAY')
         
-        self.pack[3] = ass.text
+        self.pack[4] = ass.text
     end
 ne.responder['resize'] = function(self)
         self:init()
@@ -271,12 +271,8 @@ ne.duration = 0
 ne.style.color = {'ffffff', '0', '0', '333333'}
 ne.style.border = 1
 ne.style.shadow = 1
-ne.init = function(self)
-        self:setPos()
-        self:setStyle()
-    end
 ne.render = function(self)    
-        self.pack[3] = self.text
+        self.pack[4] = self.text
     end
 ne.tick = function(self)
         if not self.visible then return '' end
@@ -312,7 +308,7 @@ ne.render = function(self)
         ass:draw_start()
         assDrawRectCW(ass, 0, 0, self.geo.w, self.geo.h, self.geo.r)
         ass:draw_stop()
-        self.pack[3] = ass.text
+        self.pack[4] = ass.text
     end
 
 -- button
@@ -331,7 +327,7 @@ ne.init = function(self)
         self:setHitBox()
     end
 ne.render = function(self)
-        self.pack[3] = self.text
+        self.pack[4] = self.text
     end
 ne.enable = function(self)
         self.enabled = true
@@ -358,7 +354,7 @@ ne.visible = false
 ne.show = function(self, text, pos, key)
         self.geo.x = pos[1]
         self.geo.y = pos[2] - 15
-        self.pack[3] = text
+        self.pack[4] = text
         self.key = key
         if self.geo.x < player.geo.width*0.1 then
             self.geo.an = 1
@@ -375,7 +371,7 @@ ne.show = function(self, text, pos, key)
 -- update tooltip content regardless of visible status if key matches
 ne.update = function(self, text, key)
         if self.key == key then
-            self.pack[3] = text
+            self.pack[4] = text
             return true
         end
         return false
@@ -470,7 +466,7 @@ ne.render = function(self)
             assDrawRectCW(ass, x-1, y1, x+1, y2, 0)
         end
         ass:draw_stop()
-        self.pack[3] = ass.text
+        self.pack[4] = ass.text
     end
 ne.enable = function(self)
         self.enabled = true

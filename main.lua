@@ -1,7 +1,6 @@
 -- mpv oscf modern
 -- by maoiscat
 -- github.com/maoiscat/
-
 require 'expansion'
 local assdraw = require 'mp.assdraw'
 
@@ -101,6 +100,7 @@ env.init = function(self)
             player.playlist = getPlaylist()
             player.chapters = getChapterList()
             player.playlistPos = getPlaylistPos()
+            showOsc()
             dispatchEvent('file-loaded')
         end)
     mp.observe_property('pause', 'bool',
@@ -186,7 +186,7 @@ ne.geo.w = 45
 ne.geo.h = 45
 ne.geo.an = 5
 ne.render = function(self)
-        self.pack[3] = self.text
+        self.pack[4] = self.text
     end
 ne.responder['resize'] = function(self)
         self.geo.x = player.geo.refX
@@ -224,7 +224,7 @@ ne.geo.h = 24
 ne.geo.an = 5
 ne.text = '\xEF\x8E\xA0'
 ne.render = function(self)
-        self.pack[3] = self.text
+        self.pack[4] = self.text
     end
 ne.responder['resize'] = function(self)
         self.geo.x = player.geo.refX - 60
@@ -274,7 +274,7 @@ ne.geo.h = 24
 ne.geo.an = 5
 ne.text = '\xEF\x8E\xB5'
 ne.render = function(self)
-        self.pack[3] = self.text
+        self.pack[4] = self.text
     end
 ne.responder['mbtn_left_up'] = function(self, pos)
         if self.enabled and self:isInside(pos) then
@@ -643,9 +643,9 @@ ne.responder['resize'] = function(self)
     end
 ne.responder['time'] = function(self)
         if player.timePos then
-            self.pack[3] = mp.format_time(player.timePos)
+            self.pack[4] = mp.format_time(player.timePos)
         else
-            self.pack[3] = '--:--:--'
+            self.pack[4] = '--:--:--'
         end
     end
 ne:init()
@@ -668,9 +668,9 @@ ne.responder['time'] = function(self)
             val = -player.timeRem
         end
         if val then
-            self.pack[3] = mp.format_time(val)
+            self.pack[4] = mp.format_time(val)
         else
-            self.pack[3] = '--:--:--'
+            self.pack[4] = '--:--:--'
         end
     end
 ne.responder['mbtn_left_up'] = function(self, pos)
@@ -706,22 +706,30 @@ ne.render = function(self)
                 text = text .. '...'
             end
         end
-        self.pack[3] = text
+        self.pack[4] = text
+    end
+ne.tick = function(self)
+        if not self.visible then return '' end
+        if self.trans >= 0.9 then
+            self.visible = false
+        end
+        return table.concat(self.pack)
     end
 ne.responder['resize'] = function(self)
         self.geo.y = player.geo.refY - 92
         self:setPos()
         self:render()
-        self.visible = player.paused and (player.geo.height >= 320)
+        self.visible = self.visible and (player.geo.height >= 320)
     end
 ne.responder['pause'] = function(self)
-        self.visible = player.paused and (player.geo.height >= 320)
+        self.visible = (self.visible or player.paused) and (player.geo.height >= 320)
     end
 ne.responder['file-loaded'] = function(self)
         local title = mp.command_native({'expand-text', '${media-title}'})
         title = title:gsub('\\n', ' '):gsub('\\$', ''):gsub('{','\\{')
         self.title = title
         self:render()
+        self.visible = true
     end
 ne:init()
 addToPlayLayout('title')
