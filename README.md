@@ -4,6 +4,14 @@ a mpv osc framework to help building your custom osc
 
 changelog:
 
+ver 0.6
+
+[add] realize the init function for element 'default'
+[add] add a seperate setAlpha function to set alpha codes, yet setStyle function set alpha codes as well
+[change] element.pack now has 4 elements, [2] = alpha codes, [4] = render codes
+[change] renderLayout function use setAlpha to mix global transparency
+[fix] bugfix for expansions and main
+
 ver 0.5
 
 first release
@@ -24,7 +32,7 @@ This oscf provides modularized and event-driven methods to help building your os
 
 Elements are basic units of the osc. An element can be a button, a shape, or even an invisible updater. The default element is already defined in the code. The most important part is the render functions and the responder table.
 
-Function tick() periodically updates the render codes to the framework, which is controlled by the system timer. The render codes are stored in ''pack'' table. pack[1] stores position codes, pack[2] style codes, and pack[3] and after are drawing/text content codes. There are setPos(), setStyle(), and render() functions to update them respectively. The result codes are in ASS format. MPV provides mp.assdraw package to generate drawing codes. 
+Function tick() periodically updates the render codes to the framework, which is controlled by the system timer. The render codes are stored in ''pack'' table. pack[1] stores position codes, pack[2] alpha codes, pack[3] style codes, and pack[4] and after are drawing/text content codes. There are setPos(), setAlpha(), setStyle(), and render() functions to update them respectively. The result codes are in ASS format. MPV provides mp.assdraw package to generate drawing codes. 
 
 responder is a table of functions related to different events. Events are dispatch by dispatchEvent() function. Each event is named by a string, and the responder function of the event is called.
 
@@ -36,7 +44,7 @@ An element is added to a layout to take effect. There are two sets of layout, id
 
 Two events are built in to support this framework, ''resize'' and ''idle''. ''resize'' happens when the osc dimesions are changed, and ''idle'' happens when mpv goes into/out of idle status. ''resize'' is very useful to reset the geometry of an element. An element respond to an event with its responder, like
 ```
-element.responder['event_name'] = function(self, args) ... return true/end end
+element.responder['event_name'] = function(self, args) ... return true/false/nil end
 ```
 if an event is dispatched like
 ```
