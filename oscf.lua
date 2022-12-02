@@ -41,6 +41,7 @@ local fadeFactor = 0        -- fade factor as transparency modifier
 -- set osd display
 -- text: in ASS format
 function setOsd(text)
+    if text == osd.data then return end
     osd.data = text
     osd:update()
 end
