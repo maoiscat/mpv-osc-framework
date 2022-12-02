@@ -7,9 +7,15 @@ changelog:
 ver 0.6
 
 [add] realize the init function for element 'default'
+
 [add] add a seperate setAlpha function to set alpha codes, yet setStyle function set alpha codes as well
+
 [change] element.pack now has 4 elements, [2] = alpha codes, [4] = render codes
+
 [change] renderLayout function use setAlpha to mix global transparency
+
+[change] optimize setPos() and setStyle()
+
 [fix] bugfix for expansions and main
 
 ver 0.5
