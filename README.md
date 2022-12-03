@@ -29,7 +29,7 @@ Mpv-osc-framewokr, or oscf, is a simple tool to help building your own osc(on sc
 
 The file “oscf.lua” provides a core set of functions to run this tool, and another file "expansion.lua" provides more functions and templates to make it works better.
 
-The file "main.lua" has realized a ["mpv-osc-modern"](https://github.com/maoiscat/mpv-osc-modern) like osc is realized with this tool, as a demo.
+The file "main.lua" has realized a ["mpv-osc-modern"](https://github.com/maoiscat/mpv-osc-modern) like osc with this tool, as a demo.
 
 To try it, you need to make a new folder in "\~\~/mpv/scripts", and download all 3 files there. Remenber to remove other osc scripts. And you will need [material-design-iconic-font](https://zavoloklom.github.io/material-design-iconic-font/) as well.
 
