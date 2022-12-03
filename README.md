@@ -37,10 +37,10 @@ To try it, you need to make a new folder in "\~\~/mpv/scripts", and download all
 
 The oscf is coded in [lua](http://www.lua.org/) language, which is natively supported by mpv. The [manual](https://mpv.io/manual/master/#script-location) has told everything about the scripting work, so I just suggest a simple method:
 
-	Make a new folder in "~~/mpv/scripts/", such as "~~/mpv/scripts/demo/".
-	Copy oscf.lua in "demo".
-	Make a new file "main.lua" in "demo".
-	Use "require 'oscf'" in main.lua to import oscf. 
+	1. Make a new folder in "~~/mpv/scripts/", such as "~~/mpv/scripts/demo/".
+	2. Copy oscf.lua in "demo".
+	3. Make a new file "main.lua" in "demo".
+	4. Use "require 'oscf'" in main.lua to import oscf. 
 
 Now when mpv starts, it loads demo/main.lua automatically, and oscf starts as well.
 
@@ -95,25 +95,25 @@ Here are details:
 
 **style** is the style params to render the element. They are all ASS styled params. 
 
-*color* - primary, secondary, outline and background color in **BGR** order.
+	*color* - primary, secondary, outline and background color in **BGR** order.
 
-*alpha* - primary, secondary, outline and background transparency, 0~255, 255 is invisible.
+	*alpha* - primary, secondary, outline and background transparency, 0~255, 255 is invisible.
 
-*border* - border size, decimal numbers.
+	*border* - border size, decimal numbers.
 
-*blur* - blur size, decimal numbers.
+	*blur* - blur size, decimal numbers.
 
-*shadow* - shadow size, decimal numbers.
+	*shadow* - shadow size, decimal numbers.
 
-*font* - fontname, string.
+	*font* - fontname, string.
 
-*fontsize* - font size, decimal numbers.
+	*fontsize* - font size, decimal numbers.
 
-*wrap* - wrap style, 0 - auto wrap, 1- end wrap, 2 - no wrap, 3 - another auto wrap.
+	*wrap* - wrap style, 0 - auto wrap, 1- end wrap, 2 - no wrap, 3 - another auto wrap.
 
 **visible** is true when the element is visible. 
 
-**pack** stores then render effect. In the pack, [1] stores the position and alignment code, [2] stores the alpha code, [3] stores other style codes, and [4] stores text and drawing codes. They are all string in ASS format.
+**pack** stores then render results. In the pack, [1] stores the position and alignment code, [2] stores the alpha code, [3] stores other style codes, and [4] stores text and drawing codes. They are all string in ASS format.
 
 **init(self)** is the initialize method, which is realized to do the following work:
 
