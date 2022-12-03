@@ -1,117 +1,288 @@
 # mpv-osc-framework
 
-a mpv osc framework to help building your custom osc
+Oscf is an “osc framework” to help building your custom osc for mpv player.
 
 changelog:
 
+ver 1.0
+
+	[change] change fixedSize to fixedHeight
+	[fix] a bug fix in mouseMove()
+	[change] some minor tweak in the framework
+
 ver 0.6
 
-[add] realize the init function for element 'default'
-
-[add] add a seperate setAlpha function to set alpha codes, yet setStyle function set alpha codes as well
-
-[change] element.pack now has 4 elements, [2] = alpha codes, [4] = render codes
-
-[change] renderLayout function use setAlpha to mix global transparency
-
-[change] optimize setPos() and setStyle()
-
-[fix] bugfix for expansions and main
+	[add] realize the init function for element 'default'
+	[add] add a seperate setAlpha function to set alpha codes, yet setStyle function set alpha codes as well
+	[change] element.pack now has 4 elements, [2] = alpha codes, [4] = render codes
+	[change] renderLayout function use setAlpha to mix global transparency
+	[change] optimize setPos() and setStyle()
+	[fix] bugfix for expansions and main
 
 ver 0.5
 
-first release
+	first release
 
 ## Introduction
 
-mpv-osc-framewokr, or oscf, is a simple framework to help building your own osc, as well as sharing codes between different oscs.
+Mpv-osc-framewokr, or oscf, is a simple tool to help building your own osc(on screen control), as well as sharing codes between different oscs.
 
-The file ''oscf.lua'' provides a core set of functions to run this framework, and another file ''expansion.lua'' provides more functions and elements templates to help building a osc.
+The file “oscf.lua” provides a core set of functions to run this tool, and another file "expansion.lua" provides more functions and templates to make it works better.
 
-A ''mpv-osc-modern'' like osc is realized with this framework, which is coded in ''main.lua''
+The file "main.lua" has realized a ["mpv-osc-modern"](https://github.com/maoiscat/mpv-osc-modern) like osc is realized with this tool, as a demo.
 
-To try it, you need to make a new folder in ''~~/mpv/scripts'', and download all 3 files there. Remenber to remove other osc scripts. And you will need [material-design-iconic-font](https://zavoloklom.github.io/material-design-iconic-font/) as well.
+To try it, you need to make a new folder in "\~\~/mpv/scripts", and download all 3 files there. Remenber to remove other osc scripts. And you will need [material-design-iconic-font](https://zavoloklom.github.io/material-design-iconic-font/) as well.
 
-This oscf provides modularized and event-driven methods to help building your osc. Everything that runs within oscf can be an element, and each element runs individually as a module. This oscf provides an internal timer to schedual periodical tasks, as well as a event dispatcher for event driven tasks. 
+## Getting Start
+
+The oscf is coded in [lua](http://www.lua.org/) language, which is natively supported by mpv. The [manual](https://mpv.io/manual/master/#script-location) has told everything about the scripting work, so I just suggest a simple method:
+
+	Make a new folder in "~~/mpv/scripts/", such as "~~/mpv/scripts/demo/".
+	Copy oscf.lua in "demo".
+	Make a new file "main.lua" in "demo".
+	Use "require 'oscf'" in main.lua to import oscf. 
+
+Now when mpv starts, it loads demo/main.lua automatically, and oscf starts as well.
 
 ## Elements
 
-Elements are basic units of the osc. An element can be a button, a shape, or even an invisible updater. The default element is already defined in the code. The most important part is the render functions and the responder table.
+Elements are basic units of the osc. An element can be a button, a shape, or even an invisible updater. Elements are created like:
 
-Function tick() periodically updates the render codes to the framework, which is controlled by the system timer. The render codes are stored in ''pack'' table. pack[1] stores position codes, pack[2] alpha codes, pack[3] style codes, and pack[4] and after are drawing/text content codes. There are setPos(), setAlpha(), setStyle(), and render() functions to update them respectively. The result codes are in ASS format. MPV provides mp.assdraw package to generate drawing codes. 
+```
+local el1 = newElement('element1')
+local el2 = newElement('element2', 'element1')
+```
+Here 'element2' is the name of el2, and el2 is created using the element named as 'element1', which is el1, as a template. The template for el1 is an internal default element, whose name is 'default' as well.
 
-responder is a table of functions related to different events. Events are dispatch by dispatchEvent() function. Each event is named by a string, and the responder function of the event is called.
+The created element is completely the same as the template. It use a "deep copy" method to make the clone from each key and value of the template recursively.
+
+The "default" element is defined as follows:
+
+```
+elements['default'] = {
+    layer = 0,
+    geo = {x = 0, y = 0, w = 0, h = 0, an = 7},
+    trans = 0,
+    style = {
+        color = {'ffffff', 'ffffff', 'ffffff', 'ffffff'},
+        alpha = {0, 0, 0, 0},
+        border = nil,
+        blur = nil,
+        shadow = nil,
+        font = nil,
+        fontsize = nil,
+        wrap = nil,
+        },
+    visible = true,
+    pack = {'', '', '', ''},
+    init = function(self) end,
+    setPos = function(self) end,
+    setAlpha = function(self, trans) end,
+    setStyle = function(self) end,
+    render = function(self) end,
+    tick = function(self) end,
+    responder = {},
+    }
+```
+
+Here are details:
+
+**layer** is the z order of an element. An element of higher layer place on top of an lower one when overlaped.
+
+**geo** is the geometry parameters of an element. They are x - left, y - top, w - width, h - height, and an - alignment respectively. Definitions of alignments are the same as ASS/SSA styles, because elements are rendered as ASS subtitles. More details can be found [here](http://www.perlfu.co.uk/projects/asa/ass-specs.doc).
+
+**trans** is a global transparency modifier for the visual effect realization. Users may not need to touch it. It's a decimal ranging from 0 to 1, and 1 means invisible.
+
+**style** is the style params to render the element. They are all ASS styled params. 
+
+*color* - primary, secondary, outline and background color in **BGR** order.
+
+*alpha* - primary, secondary, outline and background transparency, 0~255, 255 is invisible.
+
+*border* - border size, decimal numbers.
+
+*blur* - blur size, decimal numbers.
+
+*shadow* - shadow size, decimal numbers.
+
+*font* - fontname, string.
+
+*fontsize* - font size, decimal numbers.
+
+*wrap* - wrap style, 0 - auto wrap, 1- end wrap, 2 - no wrap, 3 - another auto wrap.
+
+**visible** is true when the element is visible. 
+
+**pack** stores then render effect. In the pack, [1] stores the position and alignment code, [2] stores the alpha code, [3] stores other style codes, and [4] stores text and drawing codes. They are all string in ASS format.
+
+**init(self)** is the initialize method, which is realized to do the following work:
+
+	setPos()
+	setAlpha()
+	render()
+
+users can overwrite a new init if needed.
+
+**setPos(self)** is a method to update position codes in pack[1]. Users may not need to overwrite it.
+
+**setAlpha(self, trans)** is a method to update alpha codes in pack[2]. It's usually called by the framework, and users may not need to overwrite it.
+
+**setStyle(self)** is a method to update other style codes in pack[3]. The default method hasn't realized all ASS style codes, users may overwrite this method in their own needs.
+
+**render(self)** is a method to update text and drawing codes in pack[4]. This method does nothing by default. Users have to realize it.
+
+**tick(self)** is a method called by a timer of the framework automatically. The framework updates the render results of each element in every tick, which is 0.03 second by default. If there are any periodical tasks, they can be done here. By default this method returns the concatenated string of pack if the element is visible. If an user overwrite this method, he must make sure it always return a string, or the framework may halt.
+
+**responder** stores the event responder methods. An example of a responder is like this:
+
+```
+responder['event_name'] = function(self, arg)
+		...
+		return true/false
+	end
+```
 
 ## Layouts
 
-An element is added to a layout to take effect. There are two sets of layout, idle and play. As they are named, the idle layout is used when player in idle status, and play for playing status(file loaded, or none idle)
+Having created a new element, you should add it to a layout to take effect.
+
+There are two internal layouts: idle and play. Idle means the "idle-active" status that the player is just started and no file is loaded. Yet play means files are loaded and playing, which is opposite to idle.
+
+Therefore, if an element is added to the idle layout, it only appears when player is idle, like the logo. On contrary, an element added to the play layout shows up when the player is playing.
+
+The related funtions are:
+
+```
+function addToIdleLayout(name)      -- add an element to idle layout
+function addToPlayLayout(name)      -- add an element to play layout
+function addToLayout(layout, name)  -- add an element to a layout
+```
+
+Here "name" is the string of your element name, rather than the element table name.
 
 ## Events
 
-Two events are built in to support this framework, ''resize'' and ''idle''. ''resize'' happens when the osc dimesions are changed, and ''idle'' happens when mpv goes into/out of idle status. ''resize'' is very useful to reset the geometry of an element. An element respond to an event with its responder, like
-```
-element.responder['event_name'] = function(self, args) ... return true/false/nil end
-```
-if an event is dispatched like
+In this tool, events are identified by name, which is a string, such as 'get_read', 'stop'.
+
+There are two events built in to support this framework: 'resize' and 'idle'. 'resize' happens when the osc dimesions are changed, and 'idle' happens when mpv goes into/out of idle status. 'resize' is very useful to reset the geometry of an element.
+
+Users can generate and dispatch other events using
+
 ```
 dispatchEvent('event_name', args)
 ```
-, the responder will be called. The responder should always return true/false/nil. If the return is true, it terminates this event for other responders. This could be useful for overlaped elements that a mouse button actions only active the top one.
 
-This framework provides basic mouse action support, including mouse_move, mouse_leave, mbtn_left/right/mid_down/up, wheel_up/down actions. They are all triggered as events.
+This function dispatch events for all layouts. That is, an element added to idle layout will also respond to events in playing status. But an element not in any layout would not respond to an event.
 
-## Timer
+## Mouse Action Support
 
-This framework use a timer to update elements render codes periodically. The period is no shorter than 0.03 seconds by default.
+This tool provides basic mouse action support, they are:
+
+	mouse_move/ mouse_leave
+	mbtn_left_down/ mbtn_left_up
+	mbtn_mid_down/ mbtn_mid_up
+	mbtn_right_down/ mbnt_right_up
+	mbtn_left_dbl/ mbtn_right_dbl
+	wheel_up/ wheel_down
+
+All mouse actions are treated as events. Normally the responder should be like:
+
+```
+element.responder['mouse_move'] = function(self, pos)
+		local x, y = pos[1], pos[2]
+		....
+		return true
+	end
+```
+
+It should be noticed that except for 'mouse_move' and 'mouse_leave', other mouse button events are generated only when the mouse pointer is inside of an 'active area'.
 
 ## Active Area
 
-Active Area is the area that activates the osc and mouse button actions. Use setActiveArea() functions to set an active area.
+When mouse moves inside of an active area, the osc will be shown if it's faded out. The mouse button key bindings are enabled, and thus mouse button events can be generated.
 
-## Usage
+The active areas for idle and play layouts are different, and both layouts support multiple active areas. The related functions are:
 
-This framework is a libray or package to support further osc codes. As the [manual](https://mpv.io/manual/master/#script-location) says, make a folder in ''scripts'', like ''scripts/osc''. Then put oscf.lua in this folder, and maker another ''main.lua'' as the entry script. In ''main.lua'', use
 ```
-require 'oscf'
+function setIdleActiveArea(name, x1, y1, x2, y2)    -- set active area for idle layout
+function setIdleActiveArea(name, x1, y1, x2, y2)    -- set active area for play layout
+function setActiveArea(layout, name, x1, y1, x2, y2)-- set active area for a layout
 ```
-to enable the framework.
 
-NOTICE: This work is still under development. You may suffer from unkown bugs, and the script may subject to further changes.
+Here 'name' is the name string of an area, and x1, y1, x2, y2 are left, top right, bottom position of an area.
+
+## Timer
+
+As said, this framework use a periodical timer to call tick() method to update render results. The timing interval is 0.03 seconds by default, which limits the maximum fps to about 33.
+
+This timer also updates a public variable *player.now*. Users may use it to realize some time related functions.
+
+## Visual Effects
+
+This tool uses a fading out effect to hide osc elements. Yet the osc can be "always on" or "hidden forever". The related funcion is:
+
+```
+getVisibility()    -- get osc visibility
+setVisibility(mode)-- set osc visibility
+```
+
+Supported visibility modes are 'normal', 'always', 'hide'. And the fadding effect can be tuned with variables in *opts* table.
+
+## Public Variables
+
+This tool introduces two public tables: *player* and *opts*.
+
+```
+player = {
+    now = 0,
+    geo = {width = 0, height = 0, aspect = 0},
+    idle = true,
+    }
+
+opts = {
+    scale = 1,
+    fixedHeight = false,
+    hideTimeout = 1,
+    fadeDuration = 0.5,
+    }
+```
+
+*player* table reflects the player status for public access, which is normally generated by your program, and changing their values do not interfere the framework
+
+**now** is the now time of the player in seconds. Users may use this value to do some time related tasks.
+
+**geo** is the geometry of the video area. It is usually used to determine elements' placement.
+
+**idle** is true when player is in idle status. This is used to check if it's using the idle layout.
+
+*opts* table means  user options, and altering them may change osc behavior.
+
+**scale** is the render scale of an element. scale = 2 will double the size of an element.
+
+**fixedHeight** chooses wether to fix the y resolution to 480. On true, all elements will scale with the player window height. On false the window keeps its real y resolution.
+
+**hideTimeout** is the time before the osc starts to hide after mouse leaves all active area. Measured in seconds. A negative value means never hide.
+
+**fadeDuration** is the time length during the fading out effect. Measured in seconds. A negative value means never fade.
 
 ## Public Function List
 
 More details can be found in the script.
 
 ```
-function setOsd(text)       -- set osd display
-
-function getVisibility()    -- get osc visibility
-
-function setVisibility(mode)-- set osc visibility
-
-function showOsc()          -- show osc if it's faded out
-
-function newElement(name, source)   -- create a new element, either from 'default', or from an existing source
-
-function getElement(name)   -- get the table of an element
-
-function addToIdleLayout(name)      -- add an element to idle layout
-
-function addToPlayLayout(name)      -- add an element to play layout
-
-function addToLayout(layout, name)  -- add an element to a layout
-
-function dispatchEvent(event, arg)  -- dispatch an event
-
-function setIdleActiveArea(name, x1, y1, x2, y2)    -- set active area for idle layout
-
-function setIdleActiveArea(name, x1, y1, x2, y2)    -- set active area for play layout
-
-function setActiveArea(layout, name, x1, y1, x2, y2)-- set active area for a layout
-
-function getMousePos()      -- get mouse position
-
-function enableMouseButtonEvents() -- temporarily enable mouse button events
-
-function disableMouseButtonEvents()-- temporarily disable mouse button events
+getVisibility()    -- get osc visibility
+setVisibility(mode)-- set osc visibility
+showOsc()          -- show osc if it's faded out
+newElement(name, source)   -- create a new element, either from 'default', or from an existing source
+getElement(name)   -- get the table of an element
+addToIdleLayout(name)      -- add an element to idle layout
+addToPlayLayout(name)      -- add an element to play layout
+addToLayout(layout, name)  -- add an element to a layout
+dispatchEvent(event, arg)  -- dispatch an event
+setIdleActiveArea(name, x1, y1, x2, y2)    -- set active area for idle layout
+setIdleActiveArea(name, x1, y1, x2, y2)    -- set active area for play layout
+setActiveArea(layout, name, x1, y1, x2, y2)-- set active area for a layout
+getMousePos()      -- get mouse position
+enableMouseButtonEvents() -- temporarily enable mouse button events
+disableMouseButtonEvents()-- temporarily disable mouse button events
 ```
