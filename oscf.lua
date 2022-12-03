@@ -13,16 +13,16 @@ player = {
 -- user options, altering them may change osc behavior
 opts = {
     scale = 1,              -- osc render scale
-    fixedSize = true,       -- false means scaling controller with video
-    hideTimeout = 1,        -- seconds untile osc hides
-    fadeDuration = 0.5,     -- seconds during fade out
+    fixedHeight = false,    -- true means osc y resolution is fixed 480, all elements scale with player window height
+    hideTimeout = 1,        -- seconds untile osc hides, negative means never
+    fadeDuration = 0.5,     -- seconds during fade out, negative means never
     }
 
--- local variables, user scripts do not touch these
+-- local variables, users do not touch them
 local elements = {}
 local layouts = {idle = {}, play = {}}  -- tow layouts: idle, play
 local oscLayout = 'idle'    -- selected layout will be rendered
-local targets = {           -- targets is the same as layouts, but in reversed order
+local targets = {           -- targets are the same as layouts, but in reversed order
     idle = {}, play = {}}   -- it ensures an element of higher layer respond to events first
 local activeAreas = {       -- mouse in these rectangle areas avtivate osc and bindings
     idle = {}, play = {}}   -- example: idle['name'] = {x1=, y1=, x2=, y2=}
@@ -40,7 +40,7 @@ local fadeFactor = 0        -- fade factor as transparency modifier
 -- # basic osc functions
 -- set osd display
 -- text: in ASS format
-function setOsd(text)
+local function setOsd(text)
     if text == osd.data then return end
     osd.data = text
     osd:update()
@@ -51,13 +51,13 @@ local function updateVisual()
     if visualMode == 'in' then      -- osc is shown
         visible = true
         fadeFactor = 0
-        if opts.hideTimeout <= 0 then return end
+        if opts.hideTimeout < 0 then return end
         if now - fadeLastTime >= opts.hideTimeout then
             visualMode = 'out'
             fadeLastTime = now
         end
     elseif visualMode == 'out' then -- fading out
-        if opts.fadeDuration <= 0 then return end
+        if opts.fadeDuration < 0 then return end
         local time = now - fadeLastTime
         local factor = time / opts.fadeDuration
         if factor > 1 then factor = 1 end
@@ -95,9 +95,7 @@ end
 
 -- show osc if it's faded out
 function showOsc()
-    if visualMode == 'hide' then 
-        -- nothing
-    elseif visualMode == 'in' or visualMode == 'out' then
+    if visualMode == 'in' or visualMode == 'out' then
         visualMode = 'in'
         fadeLastTime = now
     end
@@ -138,10 +136,10 @@ local function oscResize()
     local baseWidth, baseHeight = 720, 480
     local dispWidth, dispHeight, dispAspect = mp.get_osd_size()
     if dispAspect > 0 then      -- in some cases osd size could be zero, need to check
-        if opts.fixedSize then  -- if fixed size, osc geometry are related to real window size
-            baseWidth, baseHeight = dispWidth, dispHeight 
-        else                    -- or else, the osc height if fixed 480, and scale to window size
+        if opts.fixedHeight then    -- if true, baseWidth is calculated according to baseHeight
             baseWidth = baseHeight * dispAspect
+        else                    -- or else, use real window size
+            baseWidth, baseHeight = dispWidth, dispHeight 
         end
     end
     local x = baseWidth / opts.scale
@@ -278,7 +276,7 @@ elements['default'] = {
             ...
             return true/false
         end
-    return true will prevent this event from other responders,     useful in overlaped elements that only one is allowed to respond    ]]--
+    return true will prevent this event from other responders, useful in overlaped elements that only one is allowed to respond.]]--
         responder = {},
     }
 
@@ -289,7 +287,7 @@ elements['default'] = {
 function newElement(name, source)
     local ne, lookup = {}, {}
     if source == nil then source = 'default' end
-    local function clone(e)
+    local function clone(e) -- deep clone
         if type(e) ~= 'table' then return e end
         if lookup[e] then return lookup[e] end  --keep reference relations
         local copy = {}
@@ -324,11 +322,12 @@ end
 -- return: element table
 function addToIdleLayout(name)
     local e = elements[name]
-    if e == nil then return nil end
-    table.insert(layouts.idle, e)
-    table.sort(layouts.idle, lowerFirst)
-    table.insert(targets.idle, e)
-    table.sort(targets.idle, higherFirst)
+    if e then
+        table.insert(layouts.idle, e)
+        table.sort(layouts.idle, lowerFirst)
+        table.insert(targets.idle, e)
+        table.sort(targets.idle, higherFirst)
+    end
     return e
 end
 
@@ -337,11 +336,12 @@ end
 -- return: element table
 function addToPlayLayout(name)
     local e = elements[name]
-    if e == nil then return nil end
-    table.insert(layouts.play, e)
-    table.sort(layouts.play, lowerFirst)
-    table.insert(targets.play, e)
-    table.sort(targets.play, higherFirst)
+    if e then
+        table.insert(layouts.play, e)
+        table.sort(layouts.play, lowerFirst)
+        table.insert(targets.play, e)
+        table.sort(targets.play, higherFirst)
+    end
     return e
 end
 
@@ -351,16 +351,17 @@ end
 -- return: element table
 function addToLayout(layout, name)
     local e = elements[name]
-    if e == nil then return nil end
-    table.insert(layouts[layout], e)
-    table.sort(layouts[layout], lowerFirst)
-    table.insert(targets[layout], e)
-    table.sort(targets[layout], higherFirst)
+    if e then
+        table.insert(layouts[layout], e)
+        table.sort(layouts[layout], lowerFirst)
+        table.insert(targets[layout], e)
+        table.sort(targets[layout], higherFirst)
+    end
     return e
 end
 
 -- # event management
--- dispatch event to elements
+-- dispatch event to elements in all layouts
 -- event: string of event name
 -- arg: OPTIONAL arguments
 function dispatchEvent(event, arg)
@@ -373,6 +374,7 @@ function dispatchEvent(event, arg)
         end
     end
 end
+
 -- property observers to generate events
 -- these are minimum events for osc framework
 mp.observe_property('osd-dimensions', 'native',
@@ -407,7 +409,7 @@ function setActiveArea(layout, name, x1, y1, x2, y2)
     activeAreas[layout][name] = area
 end
 
--- get mouse position
+-- get mouse position scaled by display factor
 function getMousePos()
     local x, y = mp.get_mouse_pos()
     return x*mouseScale, y*mouseScale
@@ -416,26 +418,25 @@ end
 -- mouse move event handler
 local function eventMove()
     local x, y = getMousePos()
-    local areas 
-    areas = activeAreas[oscLayout]
-    for k, v in pairs(areas) do
-        x1, y1, x2, y2 = v.x1, v.y1, v.x2, v.y2
-        if x1 <= x and x <= x2 and y1 <= y and y <= y2 then
+    local check = false
+    local areas = activeAreas[oscLayout]
+    for _, v in pairs(areas) do
+        if v.x1 <= x and x <= v.x2 and v.y1 <= y and y <= v.y2 then
+            check = true
             if not active then
                 mp.enable_key_bindings('_button_')
                 active = true
-            end    
+            end
             dispatchEvent('mouse_move', {x, y})
             break
-        else
-            if active then 
-                mp.disable_key_bindings('_button_')
-                active = false
-            end
         end
     end
+    if not check and active then 
+        mp.disable_key_bindings('_button_')
+        active = false
+    end
 end
--- mouse leave mpv windows
+-- mouse leave player window
 local function eventLeave()
     if active then
         mp.disable_key_bindings('_button_')

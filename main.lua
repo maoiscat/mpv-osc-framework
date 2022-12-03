@@ -6,8 +6,7 @@ local assdraw = require 'mp.assdraw'
 
 -- logo and message works out of box
 addToIdleLayout('logo')
-local msg = addToIdleLayout('message')
-addToPlayLayout('message')
+local msg = addToPlayLayout('message')
 msg:init()
 
 -- define styles
@@ -137,7 +136,7 @@ env.responder['resize'] = function(self)
         player.geo.refX = player.geo.width / 2
         player.geo.refY = player.geo.height - 40
         setPlayActiveArea('bg1', 0, player.geo.height - 120, player.geo.width, player.geo.height)
-        setPlayActiveArea('wc1', 0, 0, player.geo.width, 48)
+        if player.fullscreen then setPlayActiveArea('wc1', 0, 0, player.geo.width, 48) end
         return false
     end
 env.responder['pause'] = function(self)
@@ -148,7 +147,6 @@ env.responder['pause'] = function(self)
         end
     end
 env:init()
-addToIdleLayout('env')
 addToPlayLayout('env')
 
 -- background
