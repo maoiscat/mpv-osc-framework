@@ -5,6 +5,7 @@ Oscf is an “osc framework” to help building your custom osc for mpv player.
 changelog:
 
 ver 1.01
+
 	[change] dispatchEvent() now dispatch events in current layout, or else it may cause some problems.
 	[change] mouse leave active areas will produce a 'mouse_leave' event
 
