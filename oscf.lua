@@ -361,17 +361,16 @@ function addToLayout(layout, name)
 end
 
 -- # event management
--- dispatch event to elements in all layouts
+-- dispatch event to elements in current layout
 -- event: string of event name
 -- arg: OPTIONAL arguments
 function dispatchEvent(event, arg)
-    for _, k in pairs(targets) do
-        for _, v in pairs(k) do
-            if v.responder[event] and 
-                v.responder[event](v, arg) then
-                -- a responder return true can terminate this event
-                    break end
-        end
+    local layout = targets[oscLayout]
+    for _, v in pairs(layout) do
+        if v.responder[event] and 
+            v.responder[event](v, arg) then
+            -- a responder return true can terminate this event
+                break end
     end
 end
 
@@ -434,6 +433,7 @@ local function eventMove()
     if not check and active then 
         mp.disable_key_bindings('_button_')
         active = false
+        dispatchEvent('mouse_leave')
     end
 end
 -- mouse leave player window
