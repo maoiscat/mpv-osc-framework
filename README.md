@@ -4,6 +4,10 @@ Oscf is an “osc framework” to help building your custom osc for mpv player.
 
 changelog:
 
+ver 1.01
+	[change] dispatchEvent() now dispatch events in current layout, or else it may cause some problems.
+	[change] mouse leave active areas will produce a 'mouse_leave' event
+
 ver 1.0
 
 	[change] change fixedSize to fixedHeight
@@ -172,7 +176,7 @@ Users can generate and dispatch other events using
 dispatchEvent('event_name', args)
 ```
 
-This function dispatch events for all layouts. That is, an element added to idle layout will also respond to events in playing status. But an element not in any layout would not respond to an event.
+This function dispatch events for current layouts. 
 
 ## Mouse Action Support
 
