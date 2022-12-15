@@ -147,6 +147,8 @@ responder['event_name'] = function(self, arg)
 	end
 ```
 
+A responder returning **true** will terminate this event for other elements. This may be useful in mouse action events when multiple elements are overlapped and only the top one is allowed to responde.
+
 ## Layouts
 
 Having created a new element, you should add it to a layout to take effect.
