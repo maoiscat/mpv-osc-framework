@@ -7,7 +7,7 @@ changelog:
 ver 1.01
 
 	[change] dispatchEvent() now dispatch events in current layout, or else it may cause some problems.
-	[change] mouse leave active areas will produce a 'mouse_leave' event
+	[change] mouse leaving active areas will produce a 'mouse_leave' event
 
 ver 1.0
 
@@ -43,7 +43,7 @@ To try it, you need to make a new folder in "\~\~/mpv/scripts", and download all
 The oscf is coded in [lua](http://www.lua.org/) language, which is natively supported by mpv. The [manual](https://mpv.io/manual/master/#script-location) has told everything about the scripting work, so I just suggest a simple method:
 
 	1. Make a new folder in "~~/mpv/scripts/", such as "~~/mpv/scripts/demo/".
-	2. Copy oscf.lua in "demo".
+	2. Copy oscf.lua to "demo".
 	3. Make a new file "main.lua" in "demo".
 	4. Use "require 'oscf'" in main.lua to import oscf. 
 
