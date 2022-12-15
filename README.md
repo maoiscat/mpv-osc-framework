@@ -287,7 +287,7 @@ addToPlayLayout(name)      -- add an element to play layout
 addToLayout(layout, name)  -- add an element to a layout
 dispatchEvent(event, arg)  -- dispatch an event
 setIdleActiveArea(name, x1, y1, x2, y2)    -- set active area for idle layout
-setIdleActiveArea(name, x1, y1, x2, y2)    -- set active area for play layout
+setPlayActiveArea(name, x1, y1, x2, y2)    -- set active area for play layout
 setActiveArea(layout, name, x1, y1, x2, y2)-- set active area for a layout
 getMousePos()      -- get mouse position
 enableMouseButtonEvents() -- temporarily enable mouse button events
