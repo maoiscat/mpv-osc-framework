@@ -6,8 +6,6 @@ local assdraw = require 'mp.assdraw'
 
 -- logo and message works out of box
 addToIdleLayout('logo')
-local msg = addToPlayLayout('message')
-msg:init()
 
 -- define styles
 local styles = {
@@ -53,6 +51,11 @@ local styles = {
         border = 0,
         blur = 0,
         },
+	volumeSlider = {
+		color = {'ffffff', '0', '0', '0'},
+        border = 0,
+        blur = 0,
+        },
     time = {
         color1 = {'ffffff', 'ffffff', '0', '0'},
         color2 = {'eeeeee', 'eeeeee', '0', '0'},
@@ -77,6 +80,7 @@ local styles = {
         },
     }
 
+opts.scale = 2
 -- enviroment updater
 -- this element updates shared vairables, sets active areas and starts event generators
 local env
@@ -84,67 +88,98 @@ env = newElement('env')
 env.layer = 1000
 env.visible = false
 env.updateTime = function()
-    player.percentPos = mp.get_property_number('percent-pos')
-    player.timePos = mp.get_property_number('time-pos')
-    player.timeRem = mp.get_property_number('time-remaining')
-    player.duration = mp.get_property_number('duration')
     dispatchEvent('time')
 end
 env.init = function(self)
-    self.slowTimer = mp.add_periodic_timer(0.25, self.updateTime)  --use a slower timer to update playtime
-    -- event generators
-    mp.register_event('file-loaded',
-        function()
-            player.tracks = getTrackList()
-            player.playlist = getPlaylist()
-            player.chapters = getChapterList()
-            player.playlistPos = getPlaylistPos()
-            showOsc()
-            dispatchEvent('file-loaded')
-        end)
-    mp.observe_property('pause', 'bool',
-        function(name, val)
-            player.paused = val
-            dispatchEvent('pause')
-        end)
-    mp.observe_property('fullscreen', 'bool',
-        function(name, val)
-            player.fullscreen = val
-            dispatchEvent('fullscreen')
-        end)
-    mp.observe_property('window-maximized', 'bool',
-        function(name, val)
-            player.maximized = val
-            dispatchEvent('window-maximized')
-        end)
-    mp.observe_property('current-tracks/audio/id', 'number',
-        function(name, val)
-            if val then player.audioTrack = val
-                else player.audioTrack = 0
-                    end
-            dispatchEvent('audio-changed')
-        end)
-    mp.observe_property('current-tracks/sub/id', 'number',
-        function(name, val)
-            if val then player.subTrack = val
-                else player.subTrack = 0
-                    end
-            dispatchEvent('sub-changed')
-        end)
-end
+		self.slowTimer = mp.add_periodic_timer(0.25, self.updateTime)  --use a slower timer to update playtime
+		-- event generators
+		mp.register_event('file-loaded',
+			function()
+				player.tracks = getTrackList()
+				player.playlist = getPlaylist()
+				player.chapters = getChapterList()
+				player.playlistPos = getPlaylistPos()
+				player.duration = mp.get_property_number('duration')
+				showOsc()
+				dispatchEvent('file-loaded')
+			end)
+		mp.observe_property('idle-active', 'bool',
+			function(name, val)
+				player.idle = val
+				dispatchEvent('idle')
+			end)
+		mp.observe_property('pause', 'bool',
+			function(name, val)
+				player.paused = val
+				dispatchEvent('pause')
+			end)
+		mp.observe_property('fullscreen', 'bool',
+			function(name, val)
+				player.fullscreen = val
+				dispatchEvent('fullscreen')
+			end)
+		mp.observe_property('window-maximized', 'bool',
+			function(name, val)
+				player.maximized = val
+				dispatchEvent('window-maximized')
+			end)
+		mp.observe_property('current-tracks/audio/id', 'number',
+			function(name, val)
+				if val then player.audioTrack = val
+					else player.audioTrack = 0
+						end
+				dispatchEvent('audio-changed')
+			end)
+		mp.observe_property('current-tracks/sub/id', 'number',
+			function(name, val)
+				if val then player.subTrack = val
+					else player.subTrack = 0
+						end
+				dispatchEvent('sub-changed')
+			end)
+		mp.observe_property('mute', 'bool',
+			function(name, val)
+				player.muted = val
+				dispatchEvent('mute')
+			end)
+        mp.observe_property('volume', 'number',
+            function(name, val)
+                player.volume = val
+                dispatchEvent('volume')
+            end)
+	end
+env.tick = function(self)
+		player.percentPos = mp.get_property_number('percent-pos')
+		player.timePos = mp.get_property_number('time-pos')
+		player.timeRem = mp.get_property_number('time-remaining')
+		return ''
+	end
 env.responder['resize'] = function(self)
         player.geo.refX = player.geo.width / 2
         player.geo.refY = player.geo.height - 40
         setPlayActiveArea('bg1', 0, player.geo.height - 120, player.geo.width, player.geo.height)
-        if player.fullscreen then setPlayActiveArea('wc1', 0, 0, player.geo.width, 48) end
+        if player.fullscreen then
+            setPlayActiveArea('wc1', player.geo.width - 200, 0, player.geo.width, 48)
+        else
+            setPlayActiveArea('wc1', -1, -1, -1, -1)
+        end
         return false
     end
 env.responder['pause'] = function(self)
+        if player.idle then return end
         if player.paused then
             setVisibility('always')
         else
             setVisibility('normal')
         end
+    end
+env.responder['idle'] = function(self)
+		if player.idle then
+			setVisibility('always')
+		else
+			setVisibility('normal')
+		end
+        return false
     end
 env:init()
 addToPlayLayout('env')
@@ -183,9 +218,6 @@ ne.style = clone(styles.button1)
 ne.geo.w = 45
 ne.geo.h = 45
 ne.geo.an = 5
-ne.render = function(self)
-        self.pack[4] = self.text
-    end
 ne.responder['resize'] = function(self)
         self.geo.x = player.geo.refX
         self.geo.y = player.geo.refY
@@ -221,9 +253,6 @@ ne.geo.w = 30
 ne.geo.h = 24
 ne.geo.an = 5
 ne.text = '\xEF\x8E\xA0'
-ne.render = function(self)
-        self.pack[4] = self.text
-    end
 ne.responder['resize'] = function(self)
         self.geo.x = player.geo.refX - 60
         self.geo.y = player.geo.refY
@@ -271,9 +300,6 @@ ne.geo.w = 30
 ne.geo.h = 24
 ne.geo.an = 5
 ne.text = '\xEF\x8E\xB5'
-ne.render = function(self)
-        self.pack[4] = self.text
-    end
 ne.responder['mbtn_left_up'] = function(self, pos)
         if self.enabled and self:isInside(pos) then
             mp.commandv('playlist-prev', 'weak')
@@ -348,7 +374,7 @@ ne.responder['resize'] = function(self)
     end
 ne.responder['mouse_move'] = function(self, pos)
         if self.enabled and self:isInside(pos) then
-            tooltip:show(self.tipText, pos, self)
+            tooltip:show(self.tipText, {self.geo.x, self.geo.y+30}, self)
             return true
         else
             tooltip:hide(self)
@@ -371,7 +397,7 @@ ne.responder['audio-changed'] = function(self)
                 lang = player.tracks.audio[player.audioTrack].lang
             end
             if not lang then lang = 'unknown' end
-            self.tipText = string.format('AUDIO [%s/%s][%s]',
+            self.tipText = string.format('[%s/%s][%s]',
             player.audioTrack, #player.tracks.audio, lang)
             tooltip:update(self.tipText, self)
         end
@@ -413,6 +439,7 @@ ne.responder['file-loaded'] = function(self)
             self:disable()
         end
     end
+ne.responder['audio-changed'] = nil
 ne.responder['sub-changed'] = function(self)
         if player.tracks then
             local title
@@ -422,7 +449,7 @@ ne.responder['sub-changed'] = function(self)
                 title = player.tracks.sub[player.subTrack].title
             end
             if not title then title = 'unknown' end
-            self.tipText = string.format('SUB [%s/%s][%s]',
+            self.tipText = string.format('[%s/%s][%s]',
                 player.subTrack, #player.tracks.sub, title)
                 tooltip:update(self.tipText, self)
         end
@@ -444,6 +471,134 @@ ne.responder['mbtn_right_up'] = function(self, pos)
     end
 ne:init()
 addToPlayLayout('cycleSub')
+
+-- toggle mute
+ne = newElement('togMute', 'button')
+ne.layer = 10
+ne.style = clone(styles.button2)
+ne.geo.x = 137
+ne.geo.w = 30
+ne.geo.h = 24
+ne.geo.an = 5
+ne.responder['resize'] = function(self)
+        self.geo.y = player.geo.refY
+        self.visible = player.geo.width >= 700
+        self:setPos()
+        self:setHitBox()
+        return false
+	end
+ne.responder['mbtn_left_up'] = function(self, pos)
+        if self.enabled and self:isInside(pos) then
+            mp.commandv('cycle', 'mute')
+            return true
+        end
+        return false
+    end
+ne.responder['mute'] = function(self)
+		if player.muted then
+			self.text = '\xEF\x8E\xBB'
+		else
+			self.text = '\xEF\x8E\xBC'
+		end
+		self:render()
+		return false
+	end
+ne:init()
+addToPlayLayout('togMute', 'button')
+
+-- volume slider
+-- background
+ne = newElement('volumeSliderBg', 'box')
+ne.layer = 9
+ne.style = clone(styles.volumeSlider)
+ne.geo.r = 0
+ne.geo.h = 1
+ne.geo.an = 4
+ne.responder['resize'] = function(self)
+		self.visible = player.geo.width > 740
+        self.geo.x = 156
+        self.geo.y = player.geo.refY
+        self.geo.w = 80
+        self:init()
+    end
+ne:init()
+addToPlayLayout('volumeSliderBg')
+
+-- seekbar
+ne = newElement('volumeSlider', 'slider')
+ne.layer = 10
+ne.style = clone(styles.volumeSlider)
+ne.geo.an = 4
+ne.geo.h = 14
+ne.barHeight = 2
+ne.barRadius = 0
+ne.nobRadius = 4
+ne.allowDrag = false
+ne.lastSeek = nil
+ne.responder['resize'] = function(self)
+		self.visible = player.geo.width > 740
+        self.geo.an = 4
+        self.geo.x = 152
+        self.geo.y = player.geo.refY
+        self.geo.w = 88
+        self:setParam()     -- setParam may change geo settings
+        self:setPos()
+        self:render()
+    end
+ne.responder['volume'] = function(self)
+        local val = player.volume
+        if val then
+			if val > 140 then val = 140
+				elseif val < 0 then val = 0 end
+            self.value = val/1.4
+            self.xValue = val/140 * self.xLength
+            self:render()
+        end
+        return false
+    end
+ne.responder['idle'] = ne.responder['volume']
+ne.responder['mouse_move'] = function(self, pos)
+        if not self.enabled then return false end
+        local vol = self:getValueAt(pos)
+        if self.allowDrag then
+            if vol then
+                mp.commandv('set', 'volume', vol*1.4)
+                env.updateTime()
+            end
+        end
+        if self:isInside(pos) then
+            local tipText
+            if vol then
+				tipText = string.format('%d', vol*1.4)
+            else
+                tipText = 'N/A'
+            end
+            tooltip:show(tipText, {pos[1], self.geo.y}, self)
+            return true
+        else
+            tooltip:hide(self)
+            return false
+        end
+    end
+ne.responder['mbtn_left_down'] = function(self, pos)
+        if not self.enabled then return false end
+        if self:isInside(pos) then
+            self.allowDrag = true
+            local vol = self:getValueAt(pos)
+            if vol then
+                mp.commandv('set', 'volume', vol*1.4)
+                return true
+            end
+        end
+        return false
+    end
+ne.responder['mbtn_left_up'] = function(self, pos)
+        self.allowDrag = false
+        self.lastSeek = nil
+    end
+ne:init()
+addToPlayLayout('volumeSlider')
+
 
 -- toggle info
 ne = newElement('togInfo', 'button')
@@ -587,7 +742,7 @@ ne.responder['mouse_move'] = function(self, pos)
             else
                 tipText = '--:--:--'
             end
-            tooltip:show(tipText, pos, self)
+            tooltip:show(tipText, {pos[1], self.geo.y}, self)
             return true
         else
             tooltip:hide(self)
@@ -692,7 +847,7 @@ ne.title = ''
 ne.render = function(self)
         local maxchars = player.geo.width / 23
         local text = self.title
-        -- ä¼°è®¡1ä¸ªä¸­æ–‡å­—ç¬¦çº¦ç­‰äºŽ1.5ä¸ªè‹±æ–‡å­—ç¬¦
+        -- ¹À¼Æ1¸öÖÐÎÄ×Ö·ûÔ¼µÈÓÚ1.5¸öÓ¢ÎÄ×Ö·û
         local charcount = (text:len() + select(2, text:gsub('[^\128-\193]', ''))*2) / 3
         if not (maxchars == nil) and (charcount > maxchars) then
             local limit = math.max(0, maxchars - 3)
@@ -728,6 +883,10 @@ ne.responder['file-loaded'] = function(self)
         self.title = title
         self:render()
         self.visible = true
+    end
+ne.responder['idle'] = function(self)
+		self.visible = not player.idle
+        return false
     end
 ne:init()
 addToPlayLayout('title')

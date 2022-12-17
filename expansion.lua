@@ -27,7 +27,7 @@ function clone(sth)
     if type(sth) ~= 'table' then return sth end
     local copy = {}
     for k, v in pairs(sth) do
-        copy[k] = v
+        copy[k] = clone(v)
     end
     return copy
 end
@@ -353,7 +353,7 @@ ne.visible = false
 -- pos is in '{x, y}' format
 ne.show = function(self, text, pos, key)
         self.geo.x = pos[1]
-        self.geo.y = pos[2] - 15
+        self.geo.y = pos[2]
         self.pack[4] = text
         self.key = key
         if self.geo.x < player.geo.width*0.1 then
