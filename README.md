@@ -178,7 +178,7 @@ Users can generate and dispatch other events using
 dispatchEvent('event_name', args)
 ```
 
-This function dispatch events for current layout. Then the function in **element.responder\['event_name'\]** will be called if it exists for every single element in current layout, except that a responder returns **false** and terminates this event.
+This function dispatch events for all layouts. Then the function in **element.responder\['event_name'\]** will be called if it exists for every single element in current layout, except that a responder returns **false** and terminates this event.
 
 ## Mouse Action Support
 
