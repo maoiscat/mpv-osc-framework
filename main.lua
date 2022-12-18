@@ -4,6 +4,9 @@
 require 'expansion'
 local assdraw = require 'mp.assdraw'
 
+-- this will change osc size
+opts.scale = 1
+
 -- logo and message works out of box
 addToIdleLayout('logo')
 
@@ -80,7 +83,6 @@ local styles = {
         },
     }
 
-opts.scale = 2
 -- enviroment updater
 -- this element updates shared vairables, sets active areas and starts event generators
 local env
@@ -847,7 +849,7 @@ ne.title = ''
 ne.render = function(self)
         local maxchars = player.geo.width / 23
         local text = self.title
-        -- ¹À¼Æ1¸öÖÐÎÄ×Ö·ûÔ¼µÈÓÚ1.5¸öÓ¢ÎÄ×Ö·û
+        -- ä¼°è®¡1ä¸ªä¸­æ–‡å­—ç¬¦çº¦ç­‰äºŽ1.5ä¸ªè‹±æ–‡å­—ç¬¦
         local charcount = (text:len() + select(2, text:gsub('[^\128-\193]', ''))*2) / 3
         if not (maxchars == nil) and (charcount > maxchars) then
             local limit = math.max(0, maxchars - 3)
