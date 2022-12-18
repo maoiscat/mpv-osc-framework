@@ -17,11 +17,10 @@ opts = {
     }
 
 -- local variables, users do not touch them
-local elements = {}
+local elements = {}			-- all available elements
+local elementsInUse = {}	-- an element added to a layout will be marked here
 local layouts = {idle = {}, play = {}}  -- tow layouts: idle, play
 local oscLayout = 'idle'    -- selected layout will be rendered
-local targets = {           -- targets are the same as layouts, but in reversed order
-    idle = {}, play = {}}   -- it ensures an element of higher layer respond to events first
 local activeAreas = {       -- mouse in these rectangle areas avtivate osc and bindings
     idle = {}, play = {}}   -- example: idle['name'] = {x1=, y1=, x2=, y2=}
 local active = false        -- true if mouse is in activeArea
@@ -319,28 +318,14 @@ end
 -- name: name string of the element
 -- return: element table
 function addToIdleLayout(name)
-    local e = elements[name]
-    if e then
-        table.insert(layouts.idle, e)
-        table.sort(layouts.idle, lowerFirst)
-        table.insert(targets.idle, e)
-        table.sort(targets.idle, higherFirst)
-    end
-    return e
+	return addToLayout('idle', name)
 end
 
 -- add an element to play layout
 -- name: name string of the element
 -- return: element table
 function addToPlayLayout(name)
-    local e = elements[name]
-    if e then
-        table.insert(layouts.play, e)
-        table.sort(layouts.play, lowerFirst)
-        table.insert(targets.play, e)
-        table.sort(targets.play, higherFirst)
-    end
-    return e
+	return addToLayout('play', name)
 end
 
 -- add an element ot a layout
@@ -352,8 +337,19 @@ function addToLayout(layout, name)
     if e then
         table.insert(layouts[layout], e)
         table.sort(layouts[layout], lowerFirst)
-        table.insert(targets[layout], e)
-        table.sort(targets[layout], higherFirst)
+        -- elementsInUse require unique values
+        local check = true
+        local n = #elementsInUse
+        for i = 1, n do
+			if e == elementsInUse[i] then
+				check = false
+				break
+			end
+		end
+		if check then
+			elementsInUse[n+1] = e
+		end
+        table.sort(elementsInUse, higherFirst)
     end
     return e
 end
@@ -363,13 +359,11 @@ end
 -- event: string of event name
 -- arg: OPTIONAL arguments
 function dispatchEvent(event, arg)
-	for _, k in pairs(targets) do
-		for _, v in ipairs(k) do
-			if v.responder[event] and 
-				v.responder[event](v, arg) then
-				-- a responder return true can terminate this event
-					break end
-		end
+	for _, v in ipairs(elementsInUse) do
+		if v.responder[event] and 
+			v.responder[event](v, arg) then
+			-- a responder return true can terminate this event
+				break end
 	end
 end
 
@@ -391,14 +385,12 @@ mp.observe_property('idle-active', 'bool',
 -- set an active area for idle layout
 -- name: string of area name
 function setIdleActiveArea(name, x1, y1, x2, y2)
-    local area = {x1 = x1, y1 = y1, x2 = x2, y2 = y2}
-    activeAreas.idle[name] = area
+    setActiveArea('idle', name, x1, y1, x2, y2)
 end
 -- set an active area for play layout
 -- name: string of area name
 function setPlayActiveArea(name, x1, y1, x2, y2)
-    local area = {x1 = x1, y1 = y1, x2 = x2, y2 = y2}
-    activeAreas.play[name] = area
+	setActiveArea('play', name, x1, y1, x2, y2)
 end
 -- a general function to set active area
 -- layout: 'idle', 'play', or else
@@ -465,6 +457,7 @@ mp.set_key_bindings({
         {'wheel_down', function() eventButton('wheel_down') end},
         {'mbtn_left_dbl', function() eventButton('mbtn_left_dbl') end},
         {'mbtn_right_dbl', function() eventButton('mbtn_right_dbl') end},
+        {'mbtn_mid_dbl', function() eventButton('mbtn_mid_dbl') end},
     }, '_button_', 'force')
 
 -- mouse button events control for user scripts
