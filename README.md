@@ -126,7 +126,7 @@ Here are details:
 **init(self)** is the initialize method, which is realized to do the following work:
 
 	setPos()
-	setAlpha()
+	setStyle()
 	render()
 
 users can overwrite a new init if needed.
