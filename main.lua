@@ -4,9 +4,6 @@
 require 'expansion'
 local assdraw = require 'mp.assdraw'
 
--- this will change osc size
-opts.scale = 1
-
 -- logo and message works out of box
 addToIdleLayout('logo')
 
@@ -83,6 +80,7 @@ local styles = {
         },
     }
 
+opts.scale = 2
 -- enviroment updater
 -- this element updates shared vairables, sets active areas and starts event generators
 local env
@@ -104,11 +102,6 @@ env.init = function(self)
 				player.duration = mp.get_property_number('duration')
 				showOsc()
 				dispatchEvent('file-loaded')
-			end)
-		mp.observe_property('idle-active', 'bool',
-			function(name, val)
-				player.idle = val
-				dispatchEvent('idle')
 			end)
 		mp.observe_property('pause', 'bool',
 			function(name, val)
@@ -849,7 +842,7 @@ ne.title = ''
 ne.render = function(self)
         local maxchars = player.geo.width / 23
         local text = self.title
-        -- ä¼°è®¡1ä¸ªä¸­æ–‡å­—ç¬¦çº¦ç­‰äºŽ1.5ä¸ªè‹±æ–‡å­—ç¬¦
+        -- ¹À¼Æ1¸öÖÐÎÄ×Ö·ûÔ¼µÈÓÚ1.5¸öÓ¢ÎÄ×Ö·û
         local charcount = (text:len() + select(2, text:gsub('[^\128-\193]', ''))*2) / 3
         if not (maxchars == nil) and (charcount > maxchars) then
             local limit = math.max(0, maxchars - 3)
@@ -905,7 +898,6 @@ ne.text = '\238\132\149'
 ne.responder['resize'] = function(self)
         self.geo.x = player.geo.width - 20
         self:init()
-        self.visible = player.fullscreen
     end
 ne.responder['mbtn_left_up'] = function(self, pos)
         if self.visible and self:isInside(pos) then
@@ -914,6 +906,9 @@ ne.responder['mbtn_left_up'] = function(self, pos)
         end
         return false
     end
+ne.responder['fullscreen'] = function(self)
+		self.visible = player.fullscreen
+	end
 ne:init()
 addToPlayLayout('winClose')
 
@@ -928,7 +923,6 @@ ne.responder['resize'] = function(self)
             self.text = '\238\132\147'
         end
         self:init()
-        self.visible = player.fullscreen
     end
 ne.responder['mbtn_left_up'] = function(self, pos)
         if self.visible and self:isInside(pos) then
@@ -949,7 +943,6 @@ ne.text = '\238\132\146'
 ne.responder['resize'] = function(self)
         self.geo.x = player.geo.width - 100
         self:init()
-        self.visible = player.fullscreen
     end
 ne.responder['mbtn_left_up'] = function(self, pos)
         if self.visible and self:isInside(pos) then
