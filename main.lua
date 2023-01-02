@@ -4,8 +4,13 @@
 require 'expansion'
 local assdraw = require 'mp.assdraw'
 
--- this line controls element drawing scale factor
-opts.scale = 1
+-- user options
+opts = {
+    scale = 1,              -- osc render scale
+    fixedHeight = false,    -- true to allow osc scale with window
+    hideTimeout = 1,        -- seconds untile osc hides, negative means never
+    fadeDuration = 0.5,     -- seconds during fade out, negative means never
+    }
 
 -- logo and message works out of box
 addToIdleLayout('logo')
