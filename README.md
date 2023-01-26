@@ -4,6 +4,10 @@ Oscf is an “osc framework” to help building your custom osc for mpv player.
 
 changelog:
 
+ver 1.3
+
+	[change] change behavior of active area actions
+
 ver 1.2
 
 	[change] some tweaks on event handle methods
@@ -214,12 +218,16 @@ When mouse moves inside of an active area, the osc will be shown if it's faded o
 The active areas for idle and play layouts are different, and both layouts support multiple active areas. The related functions are:
 
 ```
-function setIdleActiveArea(name, x1, y1, x2, y2)    -- set active area for idle layout
-function setIdleActiveArea(name, x1, y1, x2, y2)    -- set active area for play layout
-function setActiveArea(layout, name, x1, y1, x2, y2)-- set active area for a layout
+function setIdleActiveArea(name, x1, y1, x2, y2, prop)    -- set active area for idle layout
+function setIdleActiveArea(name, x1, y1, x2, y2, prop)    -- set active area for play layout
+function setActiveArea(layout, name, x1, y1, x2, y2, prop)-- set active area for a layout
 ```
 
 Here 'name' is the name string of an area, and x1, y1, x2, y2 are left, top right, bottom position of an area.
+
+'prop' is the property of the area. It is optional, and only supported property other than nil by now is 
+
+	show_hide - mouse moves in this area whill show osc once, yet generating now mouse events, nor enabling mouse keybindings.
 
 ## Timer
 
@@ -289,9 +297,9 @@ addToIdleLayout(name)      -- add an element to idle layout
 addToPlayLayout(name)      -- add an element to play layout
 addToLayout(layout, name)  -- add an element to a layout
 dispatchEvent(event, arg)  -- dispatch an event
-setIdleActiveArea(name, x1, y1, x2, y2)    -- set active area for idle layout
-setPlayActiveArea(name, x1, y1, x2, y2)    -- set active area for play layout
-setActiveArea(layout, name, x1, y1, x2, y2)-- set active area for a layout
+setIdleActiveArea(name, x1, y1, x2, y2, prop)    -- set active area for idle layout
+setPlayActiveArea(name, x1, y1, x2, y2, prop)    -- set active area for play layout
+setActiveArea(layout, name, x1, y1, x2, y2, prop)-- set active area for a layout
 getMousePos()      -- get mouse position
 enableMouseButtonEvents() -- temporarily enable mouse button events
 disableMouseButtonEvents()-- temporarily disable mouse button events
