@@ -227,7 +227,7 @@ Here 'name' is the name string of an area, and x1, y1, x2, y2 are left, top righ
 
 'prop' is the property of the area. It is optional, and only supported property other than nil by now is 
 
-	show_hide - mouse moves in this area whill show osc once, yet generating now mouse events, nor enabling mouse keybindings.
+	show_hide - mouse moves in this area whill show osc once, but won't generate mouse events, nor enabling mouse keybindings.
 
 ## Timer
 
