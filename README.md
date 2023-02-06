@@ -87,12 +87,12 @@ elements['default'] = {
         },
     visible = true,
     pack = {'', '', '', ''},
-    init = function(self) end,
-    setPos = function(self) end,
-    setAlpha = function(self, trans) end,
-    setStyle = function(self) end,
+    init = function(self) ... end,
+    setPos = function(self) ... end,
+    setAlpha = function(self, trans) ... end,
+    setStyle = function(self) ... end,
     render = function(self) end,
-    tick = function(self) end,
+    tick = function(self) ... end,
     responder = {},
     }
 ```
@@ -178,7 +178,13 @@ Here "name" is the string of your element name, rather than the element table na
 
 In this tool, events are identified by name, which is a string, such as 'get_read', 'stop'.
 
-There are two events built in to support this framework: 'resize' and 'idle'. 'resize' happens when the osc dimesions are changed, and 'idle' happens when mpv goes into/out of idle status. 'resize' is very useful to reset the geometry of an element.
+There are 3 events built in to support this framework: 'resize', 'idle', and 'mouse_leave'. 
+
+	'resize' happens when the osc dimesions are changed, which is very useful to reset the geometry of an element.
+	
+	'idle' happens when mpv goes into/out of idle status.
+	
+	'mouse_leave' happens when the mouse pointer moves out of an active area.
 
 Users can generate and dispatch other events using
 
