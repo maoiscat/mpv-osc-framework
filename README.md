@@ -148,8 +148,12 @@ users can overwrite a new init if needed.
 **responder** stores the event responder methods. An example of a responder is like this:
 
 ```
-responder['event_name'] = function(self, arg)
-		...
+el.responder['event_name'] = function(self, arg)
+		-- this is a universal method that works with any 'event_name'
+		return true/false
+	end
+el.responder.event_name = function(self, arg)
+		-- this is a more convenient method, yet not all the 'event_name' works with lua syntax
 		return true/false
 	end
 ```
