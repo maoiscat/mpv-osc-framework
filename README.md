@@ -4,6 +4,12 @@ Oscf is an “osc framework” to help building your custom osc for mpv player.
 
 changelog:
 
+ver 1.4
+	
+	[change] the global var 'elements' is local now
+	[change] element['default'] now have ''default'' style params
+	[change] setAlpha, setStyle for element['default'] is optimized to use the ''default'' style params if not provided by user. This may change the behavior of previous scripts which have used undefined syltes.
+
 ver 1.3
 
 	[change] change behavior of active area actions
@@ -78,12 +84,12 @@ elements['default'] = {
     style = {
         color = {'ffffff', 'ffffff', 'ffffff', 'ffffff'},
         alpha = {0, 0, 0, 0},
-        border = nil,
-        blur = nil,
-        shadow = nil,
-        font = nil,
-        fontsize = nil,
-        wrap = nil,
+        border = 0,
+        blur = 0,
+        shadow = 0,
+        font = '',
+        fontsize = 10,
+        wrap = 2,
         },
     visible = true,
     pack = {'', '', '', ''},
