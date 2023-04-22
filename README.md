@@ -8,7 +8,7 @@ ver 1.4
 	
 	[change] the global var 'elements' is local now
 	[change] element['default'] now have ''default'' style params
-	[change] setAlpha, setStyle for element['default'] is optimized to use the ''default'' style params if not provided by user. This may change the behavior of previous scripts which have used undefined syltes.
+	[change] setAlpha, setStyle for element['default'] is optimized to use the ''default'' style params if not provided by user. This may change the behavior of previous scripts which have used undefined styles.
 
 ver 1.3
 
