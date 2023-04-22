@@ -247,7 +247,7 @@ elements['default'] = {
 			fmt[4] = string.format('\\blur%.2f', st.blur or std.blur)
 			fmt[5] = string.format('\\shad%.2f', st.shadow or std.shadow)
 			fmt[6] = '\\fn' .. (st.font or std.font)
-			fmt[7] = string.format('\\fs%d', st.fontsize or std.fontsize)
+			fmt[7] = string.format('\\fs%.2f', st.fontsize or std.fontsize)
 			fmt[8] = string.format('\\q%d', st.wrap or std.wrap)
 			self.pack[3] = table.concat(fmt)
 			self:setAlpha(self.trans)
