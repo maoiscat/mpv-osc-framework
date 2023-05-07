@@ -6,7 +6,7 @@ local assdraw = require 'mp.assdraw'
 
 -- user options
 opts = {
-	scale = 1,              -- osc render scale
+	scale = 1.5,              -- osc render scale
 	fixedHeight = false,    -- true to allow osc scale with window
 	hideTimeout = 1,        -- seconds untile osc hides, negative means never
 	fadeDuration = 0.5,     -- seconds during fade out, negative means never
@@ -109,6 +109,13 @@ env.init = function(self)
 				player.duration = mp.get_property_number('duration')
 				showOsc()
 				dispatchEvent('file-loaded')
+			end)
+		mp.observe_property('track-list', 'native',
+			function(name, val)
+				if val then
+					player.tracks = getTrackList()
+					dispatchEvent('track-loaded')
+				end
 			end)
 		mp.observe_property('pause', 'bool',
 			function(name, val)
@@ -441,6 +448,7 @@ ne.responder['file-loaded'] = function(self)
 			self:disable()
 		end
 	end
+ne.responder['track-loaded'] = ne.responder['file-loaded']
 ne.responder['audio-changed'] = nil
 ne.responder['sub-changed'] = function(self)
 		if player.tracks then
