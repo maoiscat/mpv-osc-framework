@@ -100,8 +100,9 @@ end
 env.init = function(self)
 		self.slowTimer = mp.add_periodic_timer(0.25, self.updateTime)  --use a slower timer to update playtime
 		-- event generators
-		mp.register_event('file-loaded',
-			function()
+		mp.observe_property('track-list/count', 'native', 
+			function(name, val)
+				if val==0 then return end
 				player.tracks = getTrackList()
 				player.playlist = getPlaylist()
 				player.chapters = getChapterList()
@@ -109,13 +110,6 @@ env.init = function(self)
 				player.duration = mp.get_property_number('duration')
 				showOsc()
 				dispatchEvent('file-loaded')
-			end)
-		mp.observe_property('track-list', 'native',
-			function(name, val)
-				if val then
-					player.tracks = getTrackList()
-					dispatchEvent('track-loaded')
-				end
 			end)
 		mp.observe_property('pause', 'bool',
 			function(name, val)
@@ -448,7 +442,6 @@ ne.responder['file-loaded'] = function(self)
 			self:disable()
 		end
 	end
-ne.responder['track-loaded'] = ne.responder['file-loaded']
 ne.responder['audio-changed'] = nil
 ne.responder['sub-changed'] = function(self)
 		if player.tracks then
