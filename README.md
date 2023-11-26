@@ -87,7 +87,7 @@ elements['default'] = {
     trans = 0,
     style = {
         color = {'ffffff', 'ffffff', 'ffffff', 'ffffff'},
-        alpha = {0, 0, 0, 0},
+        alpha = {0, 0, 0, 255},
         border = 0,
         blur = 0,
         shadow = 0,
@@ -117,7 +117,7 @@ Here are details:
 
 **style** is the style params to render the element. They are all ASS styled params. 
 
-	*color* - primary, secondary, outline and background color in **BGR** order.
+	*color* - primary, secondary, outline and background color in **BGR** order. currently, background color only works when --osd-back-color is set in mpv
 
 	*alpha* - primary, secondary, outline and background transparency, 0~255, 255 is invisible.
 
