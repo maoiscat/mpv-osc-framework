@@ -5,6 +5,7 @@ Oscf is an “osc framework” to help building your custom osc for mpv player.
 changelog:
 
 ver 1.5
+
 	[change] improve compatability with --osd-back-color settings
 
 ver 1.4
